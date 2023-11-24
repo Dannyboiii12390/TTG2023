@@ -11,6 +11,8 @@ game.Run();
  * electric cars at the end (like lawn mowers int PVZ)
  * 
  * Enemies
+ * a melee zombie
+ * a ranged zombie that shoots carbon shards
  * leaving drought tiles on the board increases the rate at which enemies come 
  * fixing a drought tile costs energy
  * drought tiles cannot have anything placed on them, until fixed
