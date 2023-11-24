@@ -12,23 +12,25 @@ namespace TTG.Classes
 {
     public class Board
     {
-        public List<List<Square>> Cells { get; private set; } = new List<List<Square>>();
+        public List<List<Cell>> Cells { get; private set; } = new List<List<Cell>>();
 
-        public int cellsWide = 8;
-        public int cellsHigh = 6;
-        public float cellWidth;
-        public float cellHeight;
+        private int cellsWide = 8;
+        private int cellsHigh = 6;
+        public float cellWidth { get; private set; }
+        public float cellHeight { get; private set; }
+        public int NumberOfDroughtCells { get { return GetNumberOfDroughtCells(); } }
+
 
         public Vector2 offset = new Vector2(160,0);
 
-        public Board(int ScreenWidth, int screenHeight)
+        public Board()
         {
             cellWidth = 80;
             cellHeight = 80;
 
             for (int i = 0; i < cellsHigh; i++) 
             { 
-                List<Square> list = new List<Square>();
+                List<Cell> list = new List<Cell>();
                 for (int j = 0; j < cellsWide; j++)
                 {
                     Color color;
@@ -40,29 +42,42 @@ namespace TTG.Classes
                     {
                         color = Color.DarkGreen;
                     }
-                    list.Add(new Square(j * cellWidth + offset.X, i * cellHeight + offset.Y, cellWidth, cellHeight, color));
+                    Square square = new Square(j * cellWidth + offset.X, i * cellHeight + offset.Y, cellWidth, cellHeight, color);
+                    list.Add(new Cell(square));
                 }
                 Cells.Add(list);
             }
-
-
-
         }
-
-        public Square GetCell(int i, int j)
+        public Cell GetCell(int i, int j)
         {
 
             return Cells[i][j];
         }
         public void Draw(ShapeBatcher shapeBatcher)
         {
-            foreach(List<Square> list in Cells)
+            foreach(List<Cell> list in Cells)
             {
-                foreach(Square square in list)
+                foreach(Cell cell in list)
                 {
-                    shapeBatcher.HelperDrawSquare(square);
+                    shapeBatcher.HelperDrawSquare(cell.Square) ;
                 }
             }
+        }
+        private int GetNumberOfDroughtCells()
+        {
+            int Count = 0;
+            foreach (List<Cell> list in Cells)
+            {
+                foreach (Cell cell in list)
+                {
+                    if (cell.Drought)
+                    {
+                        Count++;
+                    }
+                }
+            }
+            return Count;   
+
         }
 
 
