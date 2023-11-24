@@ -1,3 +1,3 @@
 ﻿
-using var game = new TTG.Game1();
+using var game = new TTG.MyGame();
 game.Run();

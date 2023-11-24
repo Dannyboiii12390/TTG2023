@@ -1,15 +1,26 @@
-﻿using Microsoft.Xna.Framework;
+﻿using ImGuiNET;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.ImGui;
+using TTG.Classes;
 
 namespace TTG
 {
-	public class Game1 : Game
+	public class MyGame: Game
 	{
 		private GraphicsDeviceManager _graphics;
 		private SpriteBatch _spriteBatch;
+		private ShapeBatcher _shapeBatcher;
 
-		public Game1()
+		private Board board;
+
+
+		private int screenHeight = 480;
+		private int screenWidth = 800;
+
+        ImGuiRenderer _renderer;
+		public MyGame()
 		{
 			_graphics = new GraphicsDeviceManager(this);
 			Content.RootDirectory = "Content";
@@ -19,6 +30,9 @@ namespace TTG
 		protected override void Initialize()
 		{
 			// TODO: Add your initialization logic here
+			_shapeBatcher = new ShapeBatcher(this);
+			board = new Board(screenWidth, screenHeight);
+			_renderer = new ImGuiRenderer(this).Initialize().RebuildFontAtlas();
 
 			base.Initialize();
 		}
@@ -35,6 +49,10 @@ namespace TTG
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
 				Exit();
 
+
+			_renderer.BeginLayout(gameTime);
+			_renderer.EndLayout();
+
 			// TODO: Add your update logic here
 
 			base.Update(gameTime);
@@ -43,6 +61,9 @@ namespace TTG
 		protected override void Draw(GameTime gameTime)
 		{
 			GraphicsDevice.Clear(Color.CornflowerBlue);
+
+			board.Draw(_shapeBatcher);
+
 
 			// TODO: Add your drawing code here
 

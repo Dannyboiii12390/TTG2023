@@ -15,13 +15,13 @@ namespace MonoGameLib.Shapes
         public float width { get; private set; }
         public float height { get; private set; }
         public Color color { get; private set; }
-        public Polygon hitbox { get; private set; }
-        public Square(float X, float Y, float width, float height)
+        public  Polygon hitbox { get; private set; }
+        public Square(float X, float Y, float width, float height, Color pColour)
         {
             this.position = new Vector2(X, Y);
             this.width = width;
             this.height = height;
-            color = Color.Gray;
+            color = pColour;
             List<Vector2> points = new List<Vector2>();
             points.Add(position);
             points.Add(new Vector2(position.X + width, position.Y));
@@ -30,6 +30,11 @@ namespace MonoGameLib.Shapes
             hitbox = new Polygon(points, color);
 
 
+        }
+
+        public bool isInside(Vector2 pPosition)
+        {
+            return hitbox.isInside(pPosition);
         }
     }
 }
