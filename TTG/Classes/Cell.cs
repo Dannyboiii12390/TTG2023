@@ -10,7 +10,9 @@ namespace TTG.Classes
     public class Cell
     {
         public Square Square { get; private set; }
-        public bool Drought {get; set; }    
+        public bool Drought {get; set; }  
+        
+        
 
         public Cell(Square pSquare) 
         { 

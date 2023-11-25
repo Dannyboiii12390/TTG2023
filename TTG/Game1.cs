@@ -16,7 +16,7 @@ namespace TTG
 		private ShapeBatcher _shapeBatcher;
 
 		private Board board;
-		private List<MeleeZombie> meleeZombieList = new List<MeleeZombie>();	
+		private List<MeleeZombie> meleeZombieList = new List<MeleeZombie>();
 		private List<RangedZombie> rangedZombieList = new List<RangedZombie>();
 		private List<Bullet> bullets = new List<Bullet>();
 		
@@ -62,15 +62,23 @@ namespace TTG
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
 				Exit();
 
+			
+
+
+
 			//move all entities
 			foreach (MeleeZombie z in meleeZombieList)
 			{
+				board.updateDroughtTiles(z);
 				z.Move();
+				
+
 			}
 			foreach(RangedZombie r in rangedZombieList)
 			{
+				board.updateDroughtTiles(r);
 				r.Move();
-				//bullets.Add(r.Shoot());
+				
 			}
 			foreach(Bullet bullet in bullets)
 			{

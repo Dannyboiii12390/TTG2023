@@ -34,7 +34,7 @@ namespace TTG.Classes
                 for (int j = 0; j < cellsWide; j++)
                 {
                     Color color;
-                    if ((i + j) % 2 == 0) // is even
+                    if ((i + j) % 2 == 0) // is even ws
                     {
                         color = Color.Green;
                     }
@@ -51,7 +51,7 @@ namespace TTG.Classes
         public Cell GetCell(int i, int j)
         {
 
-            return Cells[i][j];
+            return Cells[j][i];
         }
         public void Draw(ShapeBatcher shapeBatcher)
         {
@@ -79,6 +79,23 @@ namespace TTG.Classes
             return Count;   
 
         }
+        public void updateDroughtTiles(Zombie entity)
+        {
+            foreach (List<Cell> list in Cells)
+            {
+                foreach (Cell cell in list)
+                {
+                    if(cell.Square.isInside(entity.Position))
+                    {
+                         cell.Drought = true;
+                        cell.Square.ChangeColour(Color.Tan);
+                    }
+                }
+            }
+			
+           
+            
+		}
 
 
     }

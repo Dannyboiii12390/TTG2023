@@ -36,5 +36,10 @@ namespace MonoGameLib.Shapes
         {
             return hitbox.isInside(pPosition);
         }
+        public void ChangeColour(Color pColor)
+        {
+            color = pColor;
+            hitbox.changeColour(pColor);
+        }
     }
 }
