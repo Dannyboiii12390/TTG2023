@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.ImGui;
 using MonoGameLib.Shapes;
+using MonoGameLib.Utilities;
 using System.Collections.Generic;
 using TTG.Classes;
 
@@ -12,7 +13,7 @@ namespace TTG
 	public class MyGame: Game
 	{
 		private GraphicsDeviceManager _graphics;
-		private SpriteBatch _spriteBatch;
+		private SpriteBatch _spriteBatcher;
 		private ShapeBatcher _shapeBatcher;
 
 		private Board board;
@@ -24,7 +25,9 @@ namespace TTG
 		private int screenHeight = 480;
 		private int screenWidth = 800;
 
+		private SpriteFont font;
 
+		private Menu menu = new Menu();
 
         ImGuiRenderer _renderer;
 		public MyGame()
@@ -40,20 +43,29 @@ namespace TTG
 			_shapeBatcher = new ShapeBatcher(this);
 			board = new Board();
 			_renderer = new ImGuiRenderer(this).Initialize().RebuildFontAtlas();
+			font = Content.Load<SpriteFont>("Comic Sans MS");
 
 			meleeZombieList.Add(new MeleeZombie(new Circle(new Vector2(screenWidth+40, screenHeight-40), 39, Color.Red)));
 			rangedZombieList.Add(new RangedZombie(new Circle(new Vector2(screenWidth + 40, screenHeight - 120), 39, Color.Blue)));
 			rangedZombieList.Add(new RangedZombie(new Circle(new Vector2(screenWidth + 40, screenHeight - 200), 39, Color.Blue)));
-							
 
 
-			base.Initialize();
+			
+            Vector2 opt1 = new Vector2(0, 80);
+			Vector2 opt2 = new Vector2(0, 120);
+			Vector2 opt3 = new Vector2(0, 160);
+
+            menu.AddOption(new Option(new Text("Fix Drought", font, opt1, Color.White), new Square(opt1.X, opt1.Y, 160, 40, Color.White)));
+            menu.AddOption(new Option(new Text("Place Solar Panel", font, opt2, Color.White), new Square(opt2.X, opt2.Y, 160, 40, Color.White)));
+            menu.AddOption(new Option(new Text("Place Wind Mill", font, opt3, Color.White), new Square(opt3.X, opt3.Y, 160, 40, Color.White)));
+
+            base.Initialize();
 		}
 
 		protected override void LoadContent()
 		{
-			_spriteBatch = new SpriteBatch(GraphicsDevice);
-
+			_spriteBatcher = new SpriteBatch(GraphicsDevice);
+			
 			// TODO: use this.Content to load your game content here
 		}
 
@@ -62,12 +74,14 @@ namespace TTG
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
 				Exit();
 
+
 			
+            Vector2 mousePosition = Mouse.GetState().Position.FlipY(_graphics.GraphicsDevice.Viewport.Height);
+            menu.updateOptions(mousePosition);
 
 
-
-			//move all entities
-			foreach (MeleeZombie z in meleeZombieList)
+            //move all entities
+            foreach (MeleeZombie z in meleeZombieList)
 			{
 				board.updateDroughtTiles(z);
 				z.Move();
@@ -134,6 +148,7 @@ namespace TTG
 			{
 				bullet.Draw(_shapeBatcher);
 			}
+			menu.Draw(_spriteBatcher);
 
 			_renderer.BeginLayout(gameTime);
 			//ImGui.Begin("Zombie");

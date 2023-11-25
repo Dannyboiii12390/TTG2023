@@ -11,12 +11,15 @@ namespace MonoGameLib.Shapes
 {
     public class Text : Shape 
     {
+        public SpriteFont Font { get; set; }
         public string text { get; private set; }
         //public SpriteFont font { get; private set; }
         public Vector2 position { get; private set; }
-        public Text (string pText, Vector2 pPosition, Color pColour) : base(pPosition , pColour)
+        public Text (string pText, SpriteFont pFont, Vector2 pPosition, Color pColour) : base(pPosition , pColour)
         {
             text = pText;
+            Font = pFont;
+            
             
 
         }
