@@ -29,6 +29,9 @@ namespace TTG
 
 		private Menu menu = new Menu();
 
+		private PlaceableObject onMouse = new PlaceableObject();
+		
+
         ImGuiRenderer _renderer;
 		public MyGame()
 		{
@@ -55,9 +58,10 @@ namespace TTG
 			Vector2 opt2 = new Vector2(0, 120);
 			Vector2 opt3 = new Vector2(0, 160);
 
-            menu.AddOption(new Option(new Text("Fix Drought", font, opt1, Color.White), new Square(opt1.X, opt1.Y, 160, 40, Color.White)));
-            menu.AddOption(new Option(new Text("Place Solar Panel", font, opt2, Color.White), new Square(opt2.X, opt2.Y, 160, 40, Color.White)));
-            menu.AddOption(new Option(new Text("Place Wind Mill", font, opt3, Color.White), new Square(opt3.X, opt3.Y, 160, 40, Color.White)));
+			int h = _graphics.GraphicsDevice.Viewport.Height;
+            menu.AddOption(new Option(new Text("Fix Drought", font, opt1, Color.White), new Square(opt1.X, h - opt1.Y - 20, 160, 40, Color.White)));
+            menu.AddOption(new Option(new Text("Place Solar Panel", font, opt2, Color.White), new Square(opt2.X, h - opt2.Y-20, 160, 40, Color.White)));
+            menu.AddOption(new Option(new Text("Place Wind Mill", font, opt3, Color.White), new Square(opt3.X, h - opt3.Y-20, 160, 40, Color.White)));
 
             base.Initialize();
 		}
@@ -71,10 +75,22 @@ namespace TTG
 
 		protected override void Update(GameTime gameTime)
 		{
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape) || UsefulMethods.HasCircleReachedEnd(UsefulMethods.Join(rangedZombieList, meleeZombieList)))
 				Exit();
 
-
+			if (UserMouseInput.IsLeftClicked)
+			{
+				//todo create placeable object
+				//change onMouse to new object
+			}
+			if(UserMouseInput.IsLeftHeld)
+			{
+				//drag placeable object
+			}
+			if(UserMouseInput.IsLeftJustReleased) 
+			{ 
+				//place placeable object
+			}
 			
             Vector2 mousePosition = Mouse.GetState().Position.FlipY(_graphics.GraphicsDevice.Viewport.Height);
             menu.updateOptions(mousePosition);

@@ -50,8 +50,13 @@ namespace TTG.Classes
         }
         public Cell GetCell(int i, int j)
         {
-
             return Cells[j][i];
+        }
+        public Cell GetCell(Vector2 pos)
+        {
+            int i = (int)(pos.X / cellWidth);
+            int j = (int)(pos.Y / cellHeight);
+            return GetCell(i-2, j);
         }
         public void Draw(ShapeBatcher shapeBatcher)
         {
@@ -87,15 +92,18 @@ namespace TTG.Classes
                 {
                     if(cell.Square.isInside(entity.Position))
                     {
-                         cell.Drought = true;
+                        cell.Drought = true;
                         cell.Square.ChangeColour(Color.Tan);
                     }
                 }
             }
-			
-           
-            
 		}
+        public void FixDrought(Vector2 mousePosition)
+        {
+            Cell cell = GetCell(mousePosition);
+            cell.Drought = false;
+            cell.Square.ChangeColour(cell.defaultColour);
+        }
 
 
     }
