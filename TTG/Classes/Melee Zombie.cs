@@ -1,10 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using MonoGameLib.Shapes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MonoGameLib.Shapes;
 
 namespace TTG.Classes
 {

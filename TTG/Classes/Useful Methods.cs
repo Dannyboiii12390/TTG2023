@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace TTG.Classes
 {
@@ -13,7 +9,7 @@ namespace TTG.Classes
 
             foreach (Entity entity in entities)
             {
-                if (entity.Hitbox._position.X-entity.Hitbox._radius <= 160)
+                if (entity.Hitbox._position.X - entity.Hitbox._radius <= 160)
                 {
                     return true;
                 }
@@ -24,8 +20,8 @@ namespace TTG.Classes
         {
             List<Entity> entities = new List<Entity>();
             foreach (MeleeZombie melee in list)
-            { 
-                entities.Add(melee); 
+            {
+                entities.Add(melee);
             }
             return entities;
         }
@@ -42,7 +38,7 @@ namespace TTG.Classes
         {
             List<Entity> list1 = ToEntity(r);
             List<Entity> list2 = ToEntity(m);
-            foreach(Entity entity in list1)
+            foreach (Entity entity in list1)
             {
                 list2.Add(entity);
             }

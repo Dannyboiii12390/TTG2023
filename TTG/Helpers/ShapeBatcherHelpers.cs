@@ -1,18 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using MonoGameLib;
-using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Color;
-using ImGuiNET;
-using MonoGameLib.Shapes;
-
-
-using System.Runtime.CompilerServices;
+﻿using MonoGameLib.Shapes;
 
 
 namespace TTG.Helpers
@@ -90,7 +76,7 @@ namespace TTG.Helpers
         {
             shapeBatcher.Draw(square.hitbox);
         }
-        
+
     }
 
 }

@@ -1,11 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGameLib.Shapes;
-using System;
 using System.Collections.Generic;
-
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TTG.Helpers;
 
 namespace TTG.Classes
@@ -21,15 +16,15 @@ namespace TTG.Classes
         public int NumberOfDroughtCells { get { return GetNumberOfDroughtCells(); } }
 
 
-        public Vector2 offset = new Vector2(160,0);
+        public Vector2 offset = new Vector2(160, 0);
 
         public Board()
         {
             cellWidth = 80;
             cellHeight = 80;
 
-            for (int i = 0; i < cellsHigh; i++) 
-            { 
+            for (int i = 0; i < cellsHigh; i++)
+            {
                 List<Cell> list = new List<Cell>();
                 for (int j = 0; j < cellsWide; j++)
                 {
@@ -56,15 +51,15 @@ namespace TTG.Classes
         {
             int i = (int)(pos.X / cellWidth);
             int j = (int)(pos.Y / cellHeight);
-            return GetCell(i-2, j);
+            return GetCell(i - 2, j);
         }
         public void Draw(ShapeBatcher shapeBatcher)
         {
-            foreach(List<Cell> list in Cells)
+            foreach (List<Cell> list in Cells)
             {
-                foreach(Cell cell in list)
+                foreach (Cell cell in list)
                 {
-                    shapeBatcher.HelperDrawSquare(cell.Square) ;
+                    shapeBatcher.HelperDrawSquare(cell.Square);
                 }
             }
         }
@@ -81,7 +76,7 @@ namespace TTG.Classes
                     }
                 }
             }
-            return Count;   
+            return Count;
 
         }
         public void updateDroughtTiles(Zombie entity)
@@ -90,14 +85,14 @@ namespace TTG.Classes
             {
                 foreach (Cell cell in list)
                 {
-                    if(cell.Square.isInside(entity.Position))
+                    if (cell.Square.isInside(entity.Position))
                     {
                         cell.Drought = true;
                         cell.Square.ChangeColour(Color.Tan);
                     }
                 }
             }
-		}
+        }
         public void FixDrought(Vector2 mousePosition)
         {
             Cell cell = GetCell(mousePosition);

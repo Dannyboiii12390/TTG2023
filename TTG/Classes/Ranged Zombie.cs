@@ -1,10 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGameLib.Shapes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TTG.Classes
 {
@@ -18,7 +13,7 @@ namespace TTG.Classes
 
         public Bullet Shoot()
         {
-            return new Bullet(new Circle(new Vector2(Position.X-Hitbox._radius, Position.Y), 1, Color.Black), damage);
+            return new Bullet(new Circle(new Vector2(Position.X - Hitbox._radius, Position.Y), 1, Color.Black), damage);
         }
         public RangedZombie ToRangedZombie()
         {

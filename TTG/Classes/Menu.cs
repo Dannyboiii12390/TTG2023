@@ -1,29 +1,25 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TTG.Classes
 {
     public class Menu
     {
-        public List<Option> options {  get; private set; } = new List<Option>();
+        public List<Option> options { get; private set; } = new List<Option>();
         public float Energy { get; private set; }
+        public Option selected { get; private set; }
 
-        public Menu() 
-        { 
-            
+        public Menu()
+        {
+
         }
         public void AddEnergy(float energy = 1)
         {
             Energy += energy;
         }
-        public void RemoveEnergy(float energy = 1) 
-        {  
+        public void RemoveEnergy(float energy = 1)
+        {
             Energy -= energy;
         }
         public void AddOption(Option option)
@@ -32,8 +28,8 @@ namespace TTG.Classes
 
             options.Add(option);
         }
-        public void RemoveOption(Option option) 
-        { 
+        public void RemoveOption(Option option)
+        {
             options.Remove(option);
         }
         public void Draw(SpriteBatch sb)
@@ -51,15 +47,17 @@ namespace TTG.Classes
                 if (option.isInside(target))
                 {
                     option.text.changeColour(Color.Blue);
-                    
+                    selected = option;
+
                 }
                 else
                 {
                     option.text.changeColour(Color.White);
+                    selected = null;
                 }
             }
         }
-        
+
 
 
 

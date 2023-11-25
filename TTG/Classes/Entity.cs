@@ -1,11 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGameLib.Shapes;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using TTG.Helpers;
 
 namespace TTG.Classes
@@ -23,15 +18,15 @@ namespace TTG.Classes
 
         //lower number = lower speed
         public float CoefficientOfSpeed { get; private set; } = 0.15f;
-        
 
 
-        public Entity(Circle pCircle, Vector2 pVelocity ,float pDamage, float pDamageInterval)
+
+        public Entity(Circle pCircle, Vector2 pVelocity, float pDamage, float pDamageInterval)
         {
             Interval = 0;
             Position = pCircle._position;
             Hitbox = pCircle;
-            Speed = MathF.Sqrt(pVelocity.LengthSquared())*CoefficientOfSpeed;
+            Speed = MathF.Sqrt(pVelocity.LengthSquared()) * CoefficientOfSpeed;
             pVelocity.Normalize();
             Velocity = pVelocity;
             damage = pDamage;
@@ -42,12 +37,12 @@ namespace TTG.Classes
         {
             shapeBatcher.Draw(Hitbox);
         }
-        
+
         public virtual void Move()
         {
-            Position = Position + (Velocity*Speed);
+            Position = Position + (Velocity * Speed);
             Hitbox = new Circle(Position, Hitbox._radius, Hitbox._colour);
-            
+
         }
         public Entity ToEntity()
         {

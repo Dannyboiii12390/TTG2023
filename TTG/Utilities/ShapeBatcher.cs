@@ -1,195 +1,191 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TTG
 {
     public class ShapeBatcher
     {
-    /*
-    * Shape batcher is based on code development by Two-Bit Coding
-    * For an in depth explanation see
-    * https://www.youtube.com/watch?v=ZqwfoMjJAO4
-    * https://www.youtube.com/watch?v=nG9mTQcGnG0
-    * https://www.youtube.com/watch?v=rrDDryCRl94
-    * */
+        /*
+        * Shape batcher is based on code development by Two-Bit Coding
+        * For an in depth explanation see
+        * https://www.youtube.com/watch?v=ZqwfoMjJAO4
+        * https://www.youtube.com/watch?v=nG9mTQcGnG0
+        * https://www.youtube.com/watch?v=rrDDryCRl94
+        * */
 
 
-            private MyGame _game;
+        private MyGame _game;
 
-            private bool _disposed;
-            private BasicEffect _effect;
-            private VertexPositionColor[] _vertices;
-            private int[] _indices;
+        private bool _disposed;
+        private BasicEffect _effect;
+        private VertexPositionColor[] _vertices;
+        private int[] _indices;
 
-            private int _shapeCount = 0;
-            private int _vertexCount = 0;
-            private int _indexCount = 0;
+        private int _shapeCount = 0;
+        private int _vertexCount = 0;
+        private int _indexCount = 0;
 
-            private bool _isStarted = false;
+        private bool _isStarted = false;
 
-            public static readonly float MIN_LINE_THICKNESS = 2f;
-            public static readonly float MAX_LINE_THICKNESS = 10f;
+        public static readonly float MIN_LINE_THICKNESS = 2f;
+        public static readonly float MAX_LINE_THICKNESS = 10f;
 
-            public ShapeBatcher(MyGame pGame)
+        public ShapeBatcher(MyGame pGame)
+        {
+            _game = pGame ?? throw new ArgumentNullException(nameof(pGame));
+            _disposed = false;
+            _effect = new BasicEffect(_game.GraphicsDevice);
+            _effect.TextureEnabled = false;
+            _effect.FogEnabled = false;
+            _effect.LightingEnabled = false;
+            _effect.VertexColorEnabled = true;
+            _effect.World = Matrix.Identity;
+            _effect.View = Matrix.Identity;
+            _effect.Projection = Matrix.Identity;
+
+            const int MAX_VERTEX_COUNT = 1024;
+            const int MAX_INDEX_COUNT = MAX_VERTEX_COUNT * 3;
+            _vertices = new VertexPositionColor[MAX_VERTEX_COUNT];
+            _indices = new int[MAX_INDEX_COUNT];
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
             {
-                _game = pGame ?? throw new ArgumentNullException(nameof(pGame));
-                _disposed = false;
-                _effect = new BasicEffect(_game.GraphicsDevice);
-                _effect.TextureEnabled = false;
-                _effect.FogEnabled = false;
-                _effect.LightingEnabled = false;
-                _effect.VertexColorEnabled = true;
-                _effect.World = Matrix.Identity;
-                _effect.View = Matrix.Identity;
-                _effect.Projection = Matrix.Identity;
-
-                const int MAX_VERTEX_COUNT = 1024;
-                const int MAX_INDEX_COUNT = MAX_VERTEX_COUNT * 3;
-                _vertices = new VertexPositionColor[MAX_VERTEX_COUNT];
-                _indices = new int[MAX_INDEX_COUNT];
+                return;
             }
 
-            public void Dispose()
-            {
-                if (_disposed)
-                {
-                    return;
-                }
+            _effect?.Dispose();
+            _disposed = true;
+        }
 
-                _effect?.Dispose();
-                _disposed = true;
+        public void Begin()
+        {
+            if (_isStarted)
+            {
+                throw new System.Exception("Batch already started.");
             }
 
-            public void Begin()
+            Viewport viewport = _game.GraphicsDevice.Viewport;
+            _effect.Projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, 0, viewport.Height, 0f, 1f);
+
+            _isStarted = true;
+        }
+
+        public void End()
+        {
+            Flush();
+            _isStarted = false;
+        }
+
+        private void Flush()
+        {
+            if (_shapeCount == 0)
             {
-                if (_isStarted)
-                {
-                    throw new System.Exception("Batch already started.");
-                }
-
-                Viewport viewport = _game.GraphicsDevice.Viewport;
-                _effect.Projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, 0, viewport.Height, 0f, 1f);
-
-                _isStarted = true;
+                return;
             }
 
-            public void End()
+            EnsureStarted();
+
+            foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                _game.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(
+                    PrimitiveType.TriangleList,
+                    _vertices,
+                    0,
+                    _vertexCount,
+                    _indices,
+                    0,
+                    _indexCount / 3
+                );
+            }
+
+            _shapeCount = 0;
+            _indexCount = 0;
+            _vertexCount = 0;
+        }
+
+        private void EnsureStarted()
+        {
+            if (!_isStarted)
+            {
+                throw new System.Exception("Batch not started.");
+            }
+        }
+
+        private void EnsureSpace(int pShapeVertexCount, int pShapeIndexCount)
+        {
+            if (pShapeVertexCount > _vertices.Length)
+            {
+                throw new System.Exception("Maximum shape vertex count is " + _vertices.Length);
+            }
+
+            if (pShapeIndexCount > _indices.Length)
+            {
+                throw new System.Exception("Maximum shape index count is " + _indices.Length);
+            }
+
+            if (_vertexCount + pShapeVertexCount > _vertices.Length ||
+                _indexCount + pShapeIndexCount > _indices.Length)
             {
                 Flush();
-                _isStarted = false;
             }
+        }
 
-            private void Flush()
-            {
-                if (_shapeCount == 0)
-                {
-                    return;
-                }
+        /// <summary>
+        /// Draws a line from pA to PB as a rectangle with thickness pThickness and colour pColour.
+        /// </summary>
+        /// <param name="pA">Start of the line</param>
+        /// <param name="pB">End of the line</param>
+        /// <param name="pThickness">Thickness of the line (clamped between 2 and 10)</param>
+        /// <param name="pColour">Colour of the line</param>
+        public void DrawLine(Vector2 pA, Vector2 pB, float pThickness, Color pColour)
+        {
+            EnsureStarted();
 
-                EnsureStarted();
+            const int shapeVertexCount = 4;
+            const int shapeIndexCount = 6;
 
-                foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    _game.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(
-                        PrimitiveType.TriangleList,
-                        _vertices,
-                        0,
-                        _vertexCount,
-                        _indices,
-                        0,
-                        _indexCount / 3
-                    );
-                }
+            EnsureSpace(shapeVertexCount, shapeIndexCount);
 
-                _shapeCount = 0;
-                _indexCount = 0;
-                _vertexCount = 0;
-            }
+            pThickness = Math.Clamp(pThickness, MIN_LINE_THICKNESS, MAX_LINE_THICKNESS);
 
-            private void EnsureStarted()
-            {
-                if (!_isStarted)
-                {
-                    throw new System.Exception("Batch not started.");
-                }
-            }
+            float halfThickness = pThickness * 0.5f;
 
-            private void EnsureSpace(int pShapeVertexCount, int pShapeIndexCount)
-            {
-                if (pShapeVertexCount > _vertices.Length)
-                {
-                    throw new System.Exception("Maximum shape vertex count is " + _vertices.Length);
-                }
+            float e1x = pB.X - pA.X;
+            float e1y = pB.Y - pA.Y;
 
-                if (pShapeIndexCount > _indices.Length)
-                {
-                    throw new System.Exception("Maximum shape index count is " + _indices.Length);
-                }
+            float invLength = halfThickness / MathF.Sqrt(e1x * e1x + e1y * e1y);
 
-                if (_vertexCount + pShapeVertexCount > _vertices.Length ||
-                    _indexCount + pShapeIndexCount > _indices.Length)
-                {
-                    Flush();
-                }
-            }
+            e1x *= invLength;
+            e1y *= invLength;
 
-            /// <summary>
-            /// Draws a line from pA to PB as a rectangle with thickness pThickness and colour pColour.
-            /// </summary>
-            /// <param name="pA">Start of the line</param>
-            /// <param name="pB">End of the line</param>
-            /// <param name="pThickness">Thickness of the line (clamped between 2 and 10)</param>
-            /// <param name="pColour">Colour of the line</param>
-            public void DrawLine(Vector2 pA, Vector2 pB, float pThickness, Color pColour)
-            {
-                EnsureStarted();
+            float e2x = -e1x;
+            float e2y = -e1y;
 
-                const int shapeVertexCount = 4;
-                const int shapeIndexCount = 6;
+            float n1x = -e1y;
+            float n1y = e1x;
 
-                EnsureSpace(shapeVertexCount, shapeIndexCount);
+            float n2x = -n1x;
+            float n2y = -n1y;
 
-                pThickness = Math.Clamp(pThickness, MIN_LINE_THICKNESS, MAX_LINE_THICKNESS);
+            _indices[_indexCount++] = 0 + _vertexCount;
+            _indices[_indexCount++] = 1 + _vertexCount;
+            _indices[_indexCount++] = 2 + _vertexCount;
+            _indices[_indexCount++] = 0 + _vertexCount;
+            _indices[_indexCount++] = 2 + _vertexCount;
+            _indices[_indexCount++] = 3 + _vertexCount;
 
-                float halfThickness = pThickness * 0.5f;
+            _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pA.X + n1x + e2x, pA.Y + n1y + e2y, 0f), pColour);
+            _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pB.X + n1x + e1x, pB.Y + n1y + e1y, 0f), pColour);
+            _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pB.X + n2x + e1x, pB.Y + n2y + e1y, 0f), pColour);
+            _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pA.X + n2x + e2x, pA.Y + n2y + e2y, 0f), pColour);
 
-                float e1x = pB.X - pA.X;
-                float e1y = pB.Y - pA.Y;
-
-                float invLength = halfThickness / MathF.Sqrt(e1x * e1x + e1y * e1y);
-
-                e1x *= invLength;
-                e1y *= invLength;
-
-                float e2x = -e1x;
-                float e2y = -e1y;
-
-                float n1x = -e1y;
-                float n1y = e1x;
-
-                float n2x = -n1x;
-                float n2y = -n1y;
-
-                _indices[_indexCount++] = 0 + _vertexCount;
-                _indices[_indexCount++] = 1 + _vertexCount;
-                _indices[_indexCount++] = 2 + _vertexCount;
-                _indices[_indexCount++] = 0 + _vertexCount;
-                _indices[_indexCount++] = 2 + _vertexCount;
-                _indices[_indexCount++] = 3 + _vertexCount;
-
-                _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pA.X + n1x + e2x, pA.Y + n1y + e2y, 0f), pColour);
-                _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pB.X + n1x + e1x, pB.Y + n1y + e1y, 0f), pColour);
-                _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pB.X + n2x + e1x, pB.Y + n2y + e1y, 0f), pColour);
-                _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pA.X + n2x + e2x, pA.Y + n2y + e2y, 0f), pColour);
-
-                _shapeCount++;
-            }
+            _shapeCount++;
+        }
 
 
         public void DrawTriangle(Vector2 pA, Vector2 pB, Vector2 pC, Color pColour)
@@ -205,7 +201,7 @@ namespace TTG
             _indices[_indexCount++] = 1 + _vertexCount;
             _indices[_indexCount++] = 2 + _vertexCount;
 
-            _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pA.X , pA.Y, 0f), pColour);
+            _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pA.X, pA.Y, 0f), pColour);
             _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pC.X, pC.Y, 0f), pColour);
             _vertices[_vertexCount++] = new VertexPositionColor(new Vector3(pB.X, pB.Y, 0f), pColour);
 
@@ -214,44 +210,44 @@ namespace TTG
         }
 
         public void DrawCircle(Vector2 pCentre, float pRadius, int pNumVertices, float pThickness, Color pColour)
+        {
+            const int MIN_POINTS = 3;
+            const int MAX_POINTS = 256;
+
+            pNumVertices = Math.Clamp(pNumVertices, MIN_POINTS, MAX_POINTS);
+
+            float deltaAngle = MathHelper.TwoPi / pNumVertices;
+            float angle = 0f;
+
+            for (int i = 0; i < pNumVertices; i++)
             {
-                const int MIN_POINTS = 3;
-                const int MAX_POINTS = 256;
+                float ax = pCentre.X + pRadius * MathF.Sin(angle);
+                float ay = pCentre.Y + pRadius * MathF.Cos(angle);
 
-                pNumVertices = Math.Clamp(pNumVertices, MIN_POINTS, MAX_POINTS);
+                angle += deltaAngle;
 
-                float deltaAngle = MathHelper.TwoPi / pNumVertices;
-                float angle = 0f;
-
-                for (int i = 0; i < pNumVertices; i++)
-                {
-                    float ax = pCentre.X + pRadius * MathF.Sin(angle);
-                    float ay = pCentre.Y + pRadius * MathF.Cos(angle);
-
-                    angle += deltaAngle;
-
-                    float bx = pCentre.X + pRadius * MathF.Sin(angle);
-                    float by = pCentre.Y + pRadius * MathF.Cos(angle);
-                    DrawLine(new Vector2(ax, ay), new Vector2(bx, by), pThickness, pColour);
-                }
-            }
-
-            public void DrawArrow(Vector2 pStart, Vector2 pVector, float pThickness, float pArrowSize, Color pColour)
-            {
-                Vector2 lineEnd = pStart + pVector;
-
-                Vector2 u = pVector * (1f / pVector.Length());
-                Vector2 v = new Vector2(-u.Y, u.X);
-
-                Vector2 arrowHead1 = lineEnd - pArrowSize * u + pArrowSize * v;
-                Vector2 arrowHead2 = lineEnd - pArrowSize * u - pArrowSize * v;
-
-                DrawLine(pStart, lineEnd, pThickness, pColour);
-                DrawLine(lineEnd, arrowHead1, pThickness, pColour);
-                DrawLine(lineEnd, arrowHead2, pThickness, pColour);
+                float bx = pCentre.X + pRadius * MathF.Sin(angle);
+                float by = pCentre.Y + pRadius * MathF.Cos(angle);
+                DrawLine(new Vector2(ax, ay), new Vector2(bx, by), pThickness, pColour);
             }
         }
 
+        public void DrawArrow(Vector2 pStart, Vector2 pVector, float pThickness, float pArrowSize, Color pColour)
+        {
+            Vector2 lineEnd = pStart + pVector;
 
+            Vector2 u = pVector * (1f / pVector.Length());
+            Vector2 v = new Vector2(-u.Y, u.X);
+
+            Vector2 arrowHead1 = lineEnd - pArrowSize * u + pArrowSize * v;
+            Vector2 arrowHead2 = lineEnd - pArrowSize * u - pArrowSize * v;
+
+            DrawLine(pStart, lineEnd, pThickness, pColour);
+            DrawLine(lineEnd, arrowHead1, pThickness, pColour);
+            DrawLine(lineEnd, arrowHead2, pThickness, pColour);
+        }
     }
+
+
+}
 

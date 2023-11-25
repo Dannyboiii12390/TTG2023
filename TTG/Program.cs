@@ -1,7 +1,4 @@
-﻿
-using System.Globalization;
-
-using var game = new TTG.MyGame();
+﻿using var game = new TTG.MyGame();
 game.Run();
 
 
