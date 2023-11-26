@@ -1,4 +1,5 @@
-﻿using MonoGameLib.Shapes;
+﻿using Microsoft.Xna.Framework;
+using MonoGameLib.Shapes;
 using TTG.Helpers;
 
 namespace TTG.Classes
@@ -7,6 +8,7 @@ namespace TTG.Classes
     {
         public string name { get; private set; }
         public Circle Hitbox { get; private set; }
+        public Vector2 Position { get { return Hitbox._position; } }
         public PlaceableObject(string pName, Circle pCircle)
         {
             name = pName;
@@ -23,6 +25,7 @@ namespace TTG.Classes
         {
             shapeBatcher.Draw(Hitbox);
         }
+        
     }
 
 }

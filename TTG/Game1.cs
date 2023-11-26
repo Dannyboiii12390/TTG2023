@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.ImGui;
 using MonoGameLib.Shapes;
 using MonoGameLib.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Runtime.Intrinsics;
@@ -29,15 +30,17 @@ namespace TTG
 
         private SpriteFont font;
 
-        private Menu menu = new Menu();
+        private Menu menu;
 
         private List<PlaceableObject> objects = new List<PlaceableObject>();
-        private PlaceableObject onMouse = new PlaceableObject("PlaceHolder", new Circle(new Vector2(0,0), 39, Color.Black));
+        private PlaceableObject onMouse;
 
         private bool MouseButtonDown = false;
         private bool MouseButtonHold = false;
         private bool MouseButtonReleased = false;
         private MouseState mouseState;
+        private float energyAtStart = 4;
+        private float EnergyNow;
 
         ImGuiRenderer _renderer;
         public MyGame()
@@ -55,6 +58,9 @@ namespace TTG
             _renderer = new ImGuiRenderer(this).Initialize().RebuildFontAtlas();
             font = Content.Load<SpriteFont>("Comic Sans MS");
 
+            menu = new Menu(new Text("", font, new Vector2(0, 40), Color.White));
+            EnergyNow = energyAtStart;
+
             meleeZombieList.Add(new MeleeZombie(new Circle(new Vector2(screenWidth + 40, screenHeight - 40), 39, Color.Red)));
             rangedZombieList.Add(new RangedZombie(new Circle(new Vector2(screenWidth + 40, screenHeight - 120), 39, Color.Blue)));
             rangedZombieList.Add(new RangedZombie(new Circle(new Vector2(screenWidth + 40, screenHeight - 200), 39, Color.Blue)));
@@ -66,6 +72,7 @@ namespace TTG
             Vector2 opt3 = new Vector2(0, 160);
 
             int h = _graphics.GraphicsDevice.Viewport.Height;
+            menu.ChangeTitle($"Energy: {energyAtStart}");
             menu.AddOption(new Option(new Text("Fix Drought", font, opt1, Color.White), new Square(opt1.X, h - opt1.Y - 20, 160, 40, Color.White)));
             menu.AddOption(new Option(new Text("Place Solar Panel", font, opt2, Color.White), new Square(opt2.X, h - opt2.Y - 20, 160, 40, Color.White)));
             menu.AddOption(new Option(new Text("Place Wind Mill", font, opt3, Color.White), new Square(opt3.X, h - opt3.Y - 20, 160, 40, Color.White)));
@@ -85,7 +92,7 @@ namespace TTG
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape) || UsefulMethods.HasCircleReachedEnd(UsefulMethods.Join(rangedZombieList, meleeZombieList)))
                 Exit();
 
-            MouseState mouseState = Mouse.GetState();
+            mouseState = Mouse.GetState();
 
             //works out if mouse has been held down
             bool mb = mouseState.LeftButton == ButtonState.Pressed; //works out if mouse pressed this cycle
@@ -98,9 +105,7 @@ namespace TTG
             MouseButtonDown = mb;
 
             Vector2 mousePosition = Mouse.GetState().Position.FlipY(_graphics.GraphicsDevice.Viewport.Height);
-            menu.updateOptions(mousePosition);
-
-            
+            menu.updateOptions(mousePosition); // checks if mouse is hovering over an option. turns the colour of that option blue
 
             if (MouseButtonDown && !MouseButtonHold)
             {
@@ -108,19 +113,33 @@ namespace TTG
                 //change onMouse to new object
                 foreach (Option option in menu.options)
                 {
-                    if(option.Hitbox.color == Color.Blue)
+                    if(option.text._colour == Color.Blue)
                     {
-                        onMouse = new PlaceableObject(option.text.text, new Circle(mousePosition, 39, Color.Purple));
+                        if (option.text.text.Equals("Place Solar Panel"))
+                        {
+                            onMouse = new SolarPanel(option.text.text, new Circle(mousePosition, 39, Color.Pink));
+                        }
+                        else if (option.text.text.Equals("Place Wind Mill"))
+                        {
+                            onMouse = new WindMill(option.text.text, new Circle(mousePosition, 39, Color.Brown));
+                        }
+                        else
+                        {
+                            onMouse = new PlaceableObject(option.text.text, new Circle(mousePosition, 39, Color.Purple));
+                        }
+                        
                     }
                 }
-
+                
             }
 
             if (MouseButtonHold)
             {
                 //drag placeable object
-                onMouse = new PlaceableObject(onMouse.name, new Circle(mousePosition, onMouse.Hitbox._radius, onMouse.Hitbox._colour));
-                
+                if (onMouse != null)
+                {
+                    onMouse.Hitbox.changePosition(mousePosition);
+                }
                 
             }
 
@@ -128,26 +147,19 @@ namespace TTG
             {
                 //place placeable object
                 Vector2 p;
-                try
-                {
-                    p = board.GetCell(mousePosition).Square.position;
+                Cell cell = board.GetCell(mousePosition);
+                if (cell != null && onMouse != null) 
+                { 
+                    p = cell.Square.position;
                     p.X = p.X + 40;
                     p.Y = p.Y + 40;
-                }
-                catch
-                {
-                    p = Vector2.Zero;
-                }
-                
-                if (p != Vector2.Zero)
-                {
+
                     onMouse.Hitbox.changePosition(p);
                     objects.Add(onMouse);
                     onMouse = null;
                 }
-                
             }
-
+               
             //move all entities
             foreach (MeleeZombie z in meleeZombieList)
             {
@@ -188,8 +200,41 @@ namespace TTG
                     zombie.ResetInterval();
                 }
             }
+            //this is the update method
+
+            foreach (PlaceableObject placeableObject in objects)
+            {
+                try
+                {
+                    SolarPanel sp = (SolarPanel)placeableObject;
+                    EnergyNow = sp.AddEnergy(EnergyNow);
+                }
+                catch (InvalidCastException)
+                {
+                    try
+                    {
+                        WindMill wm = (WindMill)placeableObject;
+                        wm.Interval++;
+
+                        if (wm.Interval >= wm.DamageInterval)
+                        {
+                            Bullet bull = wm.DealDamage();
+                            bull.ChangeVelocity(new Vector2(10, 0));
+                            bullets.Add(bull);
+                        }
+                      
+                    }catch(InvalidCastException)
+                    {
+                       
+                    }
+
+                }
+            }
 
 
+
+            menu.ChangeTitle($"Energy {(int)EnergyNow}");
+            Console.WriteLine(objects);
 
 
 

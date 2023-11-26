@@ -15,6 +15,25 @@ namespace TTG.Classes
         public float cellWidth { get; private set; }
         public float cellHeight { get; private set; }
         public int NumberOfDroughtCells { get { return GetNumberOfDroughtCells(); } }
+        public List<PlaceableObject> objects 
+        { 
+            get 
+            { 
+                List<PlaceableObject> placeableObjects = new List<PlaceableObject>();
+                foreach(List<Cell> list in Cells) 
+                { 
+                    foreach (Cell cell in list)
+                    {
+                        if (cell.Object == null)
+                        {
+                            continue;
+                        }
+                        placeableObjects.Add(cell.Object);
+                    } 
+                }
+                return placeableObjects;
+            } 
+        }
 
 
         public Vector2 offset = new Vector2(160, 0);
