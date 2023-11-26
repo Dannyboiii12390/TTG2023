@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGameLib.Shapes;
+using System;
 using System.Collections.Generic;
 using TTG.Helpers;
 
@@ -45,7 +46,16 @@ namespace TTG.Classes
         }
         public Cell GetCell(int i, int j)
         {
-            return Cells[j][i];
+            try
+            {
+                return Cells[j][i];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return null;
+            }
+            
+            
         }
         public Cell GetCell(Vector2 pos)
         {

@@ -7,6 +7,7 @@ using MonoGameLib.Shapes;
 using MonoGameLib.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
+using System.Runtime.Intrinsics;
 using TTG.Classes;
 
 namespace TTG
@@ -31,7 +32,7 @@ namespace TTG
         private Menu menu = new Menu();
 
         private List<PlaceableObject> objects = new List<PlaceableObject>();
-        private PlaceableObject onMouse = null;
+        private PlaceableObject onMouse = new PlaceableObject("PlaceHolder", new Circle(new Vector2(0,0), 39, Color.Black));
 
         private bool MouseButtonDown = false;
         private bool MouseButtonHold = false;
@@ -99,26 +100,52 @@ namespace TTG
             Vector2 mousePosition = Mouse.GetState().Position.FlipY(_graphics.GraphicsDevice.Viewport.Height);
             menu.updateOptions(mousePosition);
 
+            
 
-            if (MouseButtonDown || !MouseButtonHold)
+            if (MouseButtonDown && !MouseButtonHold)
             {
                 //todo create placeable object
                 //change onMouse to new object
-                onMouse = new SolarPanel(new Circle(mousePosition, 39, Color.Purple)); ;
-
+                foreach (Option option in menu.options)
+                {
+                    if(option.Hitbox.color == Color.Blue)
+                    {
+                        onMouse = new PlaceableObject(option.text.text, new Circle(mousePosition, 39, Color.Purple));
+                    }
+                }
 
             }
+
             if (MouseButtonHold)
             {
                 //drag placeable object
-                onMouse = new SolarPanel(new Circle(mousePosition, onMouse.Hitbox._radius, onMouse.Hitbox._colour));
+                onMouse = new PlaceableObject(onMouse.name, new Circle(mousePosition, onMouse.Hitbox._radius, onMouse.Hitbox._colour));
+                
+                
             }
+
             if (MouseButtonReleased)
             {
                 //place placeable object
-                onMouse.Hitbox.changePosition(board.GetCell(mousePosition).Square.position);
-                objects.Add(onMouse);
-                onMouse = null;
+                Vector2 p;
+                try
+                {
+                    p = board.GetCell(mousePosition).Square.position;
+                    p.X = p.X + 40;
+                    p.Y = p.Y + 40;
+                }
+                catch
+                {
+                    p = Vector2.Zero;
+                }
+                
+                if (p != Vector2.Zero)
+                {
+                    onMouse.Hitbox.changePosition(p);
+                    objects.Add(onMouse);
+                    onMouse = null;
+                }
+                
             }
 
             //move all entities
@@ -174,9 +201,7 @@ namespace TTG
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-
             board.Draw(_shapeBatcher);
-
             foreach (MeleeZombie z in meleeZombieList)
             {
                 z.Draw(_shapeBatcher);
@@ -190,26 +215,19 @@ namespace TTG
                 bullet.Draw(_shapeBatcher);
             }
             menu.Draw(_spriteBatcher);
-
             foreach (PlaceableObject obj in objects)
             {
                 obj.Draw(_shapeBatcher);
             }
-
             if (onMouse != null)
             {
                 onMouse.Draw(_shapeBatcher);
             }
-
             _renderer.BeginLayout(gameTime);
             //ImGui.Begin("Zombie");
             //ImGui.Text(rangedZombieList[0].Interval.ToString());
-
             _renderer.EndLayout();
-
-
             // TODO: Add your drawing code here
-
             base.Draw(gameTime);
         }
     }

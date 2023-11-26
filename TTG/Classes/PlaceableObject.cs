@@ -5,7 +5,7 @@ namespace TTG.Classes
 {
     public class PlaceableObject
     {
-        string name;
+        public string name { get; private set; }
         public Circle Hitbox { get; private set; }
         public PlaceableObject(string pName, Circle pCircle)
         {
